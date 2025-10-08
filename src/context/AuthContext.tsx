@@ -5,6 +5,7 @@ interface JwtPayload {
     id: number;
     sub: string;  // 'sub' is the standard JWT field for subject (email in this case)
     role: string;
+    name: string; // Name field from JWT
     exp: number;
 }
 

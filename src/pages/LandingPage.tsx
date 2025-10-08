@@ -1,21 +1,22 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import HeroColorAnimation from "../components/home/Hero";
 import Navbar from "../components/home/Navbar";
+import { AuthContext } from "../context/AuthContext";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
 
   const handleSignIn = () => {
-    // integrate your sign-in logic here (MSAL, OAuth, etc.)
     navigate("/signin");
   };
 
   const handleGoToWorkspace = () => {
-    navigate("/workspace");
+    navigate("/dashboard");
   };
 
-  const isAuthenticated = false; // replace with your auth state (from context, MSAL, etc.)
+  const isAuthenticated = !!authContext?.token;
 
   return (
     <div className="relative">

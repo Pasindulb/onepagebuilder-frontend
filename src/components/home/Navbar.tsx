@@ -29,6 +29,7 @@ const Navbar: React.FC<NavbarProps> = ({
           color: white;
           font-weight: 600;
           transition: all 0.3s ease;
+          margin-top: 0px;!
         }
 
         .nav-btn:hover {
@@ -43,7 +44,7 @@ const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center space-x-2 cursor-pointer">
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-white text-2xl font-extrabold tracking-tight">
-              OnePage<span className="text-purple-400">Builder</span>
+              OnePage<span className="text-red-400">Builder</span>
             </span>
           </Link>
         </div>

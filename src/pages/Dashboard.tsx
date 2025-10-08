@@ -10,7 +10,7 @@ const Dashboard: React.FC = () => {
         return <p>Loading...</p>;
     }
 
-    const { id, sub: email, role } = authContext.user; // Destructure 'sub' as 'email'
+    const { id, sub: email, name, role } = authContext.user; // Destructure 'sub' as 'email'
     console.log("User info:", authContext.user);
     const handleLogout = () => {
         authContext.logout();
@@ -22,6 +22,7 @@ const Dashboard: React.FC = () => {
             <h1>Dashboard</h1>
             <p><strong>ID:</strong> {id}</p>
             <p><strong>Email:</strong> {email}</p>
+            <p><strong>Name:</strong> {name}</p>
             <p><strong>Role:</strong> {role}</p>
 
             <button onClick={handleLogout} className="mt-4 p-2 bg-red-500 text-white rounded">

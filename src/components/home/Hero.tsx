@@ -37,29 +37,29 @@ const HeroColorAnimation: React.FC<HeroAnimationProps> = ({
     width: '3000%',
     height: '100%',
     background: `linear-gradient(
-      45deg,
-      #f3e8ff 0%,
-      #e9d5ff 5%,
-      #e0aaff 10%,
-      #d8b4fe 15%,
-      #c77dff 20%,
-      #be95ff 25%,
-      #000000 30%,
-      #000000 35%,
-      #1e0038 40%,
-      #9333ea 45%,
-      #8b5cf6 50%,
-      #7c3aed 55%,
-      #7b2cbf 60%,
-      #240046 65%,
-      #000000 70%,
-      #000000 75%,
-      #000000 80%,
-      #2e1065 85%,
-      #240046 90%,
-      #1e0038 95%,
-      #000000 100%
-    )`,
+  45deg,
+  #ffebee 0%,
+  #ffcdd2 5%,
+  #ef9a9a 10%,
+  #e57373 15%,
+  #ef5350 20%,
+  #f44336 25%,
+  #000000 30%,
+  #000000 35%,
+  #1a0000 40%,
+  #e53935 45%,
+  #d32f2f 50%,
+  #c62828 55%,
+  #b71c1c 60%,
+  #290000 65%,
+  #000000 70%,
+  #000000 75%,
+  #000000 80%,
+  #3d0000 85%,
+  #290000 90%,
+  #1a0000 95%,
+  #000000 100%
+)`,
     animation: `waveFlow ${animationSpeed * 1.8}s ease-in-out infinite`
   };
 
@@ -79,7 +79,7 @@ const HeroColorAnimation: React.FC<HeroAnimationProps> = ({
     fontSize: 'clamp(2.5rem, 8vw, 6rem)',
     fontWeight: 900,
     marginBottom: '1rem',
-    background: 'linear-gradient(45deg, #ffffff, #e0aaff, #c77dff)',
+    background: 'linear-gradient(45deg, #ffffff, #ffb3ba, #ff6b6b)',
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
@@ -90,6 +90,7 @@ const HeroColorAnimation: React.FC<HeroAnimationProps> = ({
     fontSize: 'clamp(1rem, 3vw, 1.5rem)',
     fontWeight: 300,
     opacity: 0.9,
+    color: 'white',
     letterSpacing: '0.05em',
     animation: 'fadeInUp 2s ease-out 0.5s both'
   };
@@ -158,8 +159,8 @@ const HeroColorAnimation: React.FC<HeroAnimationProps> = ({
             <div className="hidden sm:mb-8 sm:flex">
               <div className="glass-effect relative overflow-hidden rounded-full px-4 py-2 text-lg text-white font-medium hover:border-purple-500/40 group transition-all duration-300 hover:scale-105">
                 <span className="relative flex items-center">
-                  <div className="mr-2 p-1 bg-purple-500 bg-opacity-30 rounded-full">
-                    <RocketLaunchIcon className="h-4 w-4 text-purple-100" />
+                  <div className="mr-2 p-1 bg-red-500 bg-opacity-30 rounded-full">
+                    <RocketLaunchIcon className="h-4 w-4 text-red-100" />
                   </div>
                   <span>Launch your service website — no coding required.</span>
                 </span>
