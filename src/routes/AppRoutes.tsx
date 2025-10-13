@@ -1,7 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
-import Editor from "../components/editor/Editor";
+import Profile from "../pages/Profile";
+import Editor from "../pages/Editor";
+import ProjectsPage from "../pages/ProjectsPage";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import Home from "../pages/LandingPage";
@@ -17,7 +18,8 @@ const AppRoutes: React.FC = () => (
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/signin" element={<Auth />} />
-            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/settings/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/projects" element={<PrivateRoute><ProjectsPage /></PrivateRoute>} />
             <Route path="/editor" element={<PrivateRoute><Editor /></PrivateRoute>} />
         </Routes>
     </BrowserRouter>
