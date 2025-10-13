@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import HeroColorAnimation from "../components/home/Hero";
-import Navbar from "../components/home/Navbar";
+import Navbar from "../components/home/MainNavbar";
 import { AuthContext } from "../context/AuthContext";
 
 const LandingPage: React.FC = () => {
@@ -12,8 +12,8 @@ const LandingPage: React.FC = () => {
     navigate("/signin");
   };
 
-  const handleGoToWorkspace = () => {
-    navigate("/dashboard");
+  const handleGoToProject = () => {
+    navigate("/projects");
   };
 
   const isAuthenticated = !!authContext?.token;
@@ -23,7 +23,7 @@ const LandingPage: React.FC = () => {
       <Navbar
         isAuthenticated={isAuthenticated}
         onSignIn={handleSignIn}
-        onGoToWorkspace={handleGoToWorkspace}
+        onGoToProject={handleGoToProject}
       />
       <HeroColorAnimation />
     </div>

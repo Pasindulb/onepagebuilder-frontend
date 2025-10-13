@@ -4,13 +4,13 @@ import { Link } from "react-router-dom";
 interface NavbarProps {
   isAuthenticated?: boolean;
   onSignIn?: () => void;
-  onGoToWorkspace?: () => void;
+  onGoToProject?: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   isAuthenticated = false,
   onSignIn,
-  onGoToWorkspace,
+  onGoToProject,
 }) => {
   return (
     <>
@@ -56,8 +56,8 @@ const Navbar: React.FC<NavbarProps> = ({
               Sign In
             </button>
           ) : (
-            <button className="nav-btn" onClick={onGoToWorkspace}>
-              My Workspace
+            <button className="nav-btn" onClick={onGoToProject}>
+              My Projects
             </button>
           )}
         </div>

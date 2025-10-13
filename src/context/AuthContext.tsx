@@ -20,19 +20,37 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const storedToken = localStorage.getItem("token");
+    const storedUserData = localStorage.getItem("userData");
+    
     const [token, setToken] = useState<string | null>(storedToken);
-    const [user, setUser] = useState<JwtPayload | null>(storedToken ? jwtDecode(storedToken) : null);
+    const [user, setUser] = useState<JwtPayload | null>(() => {
+        if (storedUserData) {
+            try {
+                return JSON.parse(storedUserData);
+            } catch {
+                return storedToken ? jwtDecode(storedToken) : null;
+            }
+        }
+        return storedToken ? jwtDecode(storedToken) : null;
+    });
 
     const login = (token: string) => {
         setToken(token);
         localStorage.setItem("token", token);
-        setUser(jwtDecode(token));
+        
+        const decodedUser = jwtDecode<JwtPayload>(token);
+        setUser(decodedUser);
+        
+        // Save user data to localStorage for API interceptor
+        localStorage.setItem("userData", JSON.stringify(decodedUser));
     };
 
     const logout = () => {
         setToken(null);
         setUser(null);
         localStorage.removeItem("token");
+        localStorage.removeItem("userData");
+        localStorage.removeItem("currentProject");
     };
 
     return (

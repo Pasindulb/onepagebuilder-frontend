@@ -79,11 +79,11 @@ const HeroColorAnimation: React.FC<HeroAnimationProps> = ({
     fontSize: 'clamp(2.5rem, 8vw, 6rem)',
     fontWeight: 900,
     marginBottom: '1rem',
-    background: 'linear-gradient(45deg, #ffffff, #ffb3ba, #ff6b6b)',
+    background: 'white',
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
-    animation: 'textGlow 4s ease-in-out infinite alternate'
+    animation: '4s ease-in-out infinite alternate'
   };
 
   const subtitleStyles: React.CSSProperties = {
