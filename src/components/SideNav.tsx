@@ -35,6 +35,7 @@ const SideNav = () => {
     return saved ? JSON.parse(saved) : false;
   });
   const [activeSection, setActiveSection] = useState("editor");
+  const [activeEditorSubsection, setActiveEditorSubsection] = useState("navbar");
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
 
   // Update active section based on current route
@@ -50,6 +51,16 @@ const SideNav = () => {
       setActiveSection("settings");
     }
   }, [location.pathname]);
+
+  // Listen for editor section changes from Editor component
+  useEffect(() => {
+    const handleEditorSectionUpdate = (e: any) => {
+      setActiveEditorSubsection(e.detail.sectionId);
+    };
+
+    window.addEventListener('editorSectionUpdate', handleEditorSectionUpdate);
+    return () => window.removeEventListener('editorSectionUpdate', handleEditorSectionUpdate);
+  }, []);
 
   // Apply dark mode class and save to localStorage
   useEffect(() => {
@@ -92,10 +103,17 @@ const SideNav = () => {
       return;
     }
     
-    // Otherwise (Editor subsections), scroll to element by ID
+    // Otherwise (Editor subsections), update active state and scroll
+    setActiveEditorSubsection(item.id);
+    
     const element = document.getElementById(item.id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
+      
+      // Dispatch custom event to notify Editor about section change
+      window.dispatchEvent(new CustomEvent('editorSectionChange', { 
+        detail: { sectionId: item.id } 
+      }));
     }
   };
 
@@ -256,7 +274,11 @@ const SideNav = () => {
               <div className="space-y-1">
                 {activeContent?.subsections?.map((item: any) => {
                   const ItemIcon = item.icon;
-                  const isActiveSubsection = item.href && location.pathname === item.href;
+                  // For editor sections, use activeEditorSubsection state
+                  // For other sections, check URL path
+                  const isActiveSubsection = item.href 
+                    ? location.pathname === item.href
+                    : activeSection === "editor" && activeEditorSubsection === item.id;
                   
                   return (
                     <button
@@ -267,6 +289,7 @@ const SideNav = () => {
                           : 'text-[hsl(var(--text-primary))] hover:bg-[hsl(var(--hover-bg))] active:bg-[hsl(var(--active-bg))]'
                       }`}
                       onClick={() => handleSubsectionClick(item)}
+                      data-section-id={item.id}
                     >
                       <ItemIcon className={`w-5 h-5 transition-colors ${
                         isActiveSubsection

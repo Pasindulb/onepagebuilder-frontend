@@ -51,8 +51,9 @@ export const saveDraft = async (projectId: number, config: any): Promise<void> =
 };
 
 // Publish site
-export const publishSite = async (projectId: number, config: any): Promise<void> => {
-  await apiClient.post(`/projects/${projectId}/publish`, config);
+export const publishSite = async (projectId: number, config: any): Promise<{ message: string; liveUrl: string }> => {
+  const response = await apiClient.post<{ message: string; liveUrl: string }>(`/projects/${projectId}/publish`, config);
+  return response.data;
 };
 
 // Get draft configuration

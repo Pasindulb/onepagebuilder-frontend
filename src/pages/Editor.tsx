@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import SideNav from "../components/SideNav";
 import { NavbarConfig } from "../types/navbar.types";
+import { HeroConfig } from "../types/hero.types";
 import { Navbar } from "../components/editor/Navbar";
 import NavbarEditor from "../components/editor/NavbarEditor";
+import { Hero } from "../components/editor/Hero";
+import HeroEditor from "../components/editor/HeroEditor";
 import { saveDraft, publishSite, getProject } from "../api/project";
 
 // pages/Editor.tsx
@@ -11,12 +14,14 @@ const Editor = () => {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('project');
   
-  const [draftConfig, setDraftConfig] = useState<NavbarConfig>();
+  const [draftConfig, setDraftConfig] = useState<any>();
   const [isPublished, setIsPublished] = useState(false);
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [projectName, setProjectName] = useState('My Website');
+  const [activeSection, setActiveSection] = useState('navbar');
+  
   const [navbarConfig, setNavbarConfig] = useState<NavbarConfig>({
     id: '1',
     brandName: 'My Site',
@@ -27,6 +32,30 @@ const Editor = () => {
     backgroundColor: '#333',
     textColor: '#fff'
   });
+
+  const [heroConfig, setHeroConfig] = useState<HeroConfig>({
+    id: '1',
+    heading: 'Welcome to Our Site',
+    subheading: 'Build beautiful landing pages in minutes',
+    backgroundColor: '#1a202c',
+    textColor: '#ffffff',
+    textAlignment: 'center',
+    buttons: []
+  });
+
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Helper function to clean old fields from navbar config
+  const cleanNavbarConfig = (config: any): NavbarConfig => {
+    if (config.navItems) {
+      config.navItems = config.navItems.map((item: any) => {
+        const { isButton, isExternal, icon, ...cleanItem } = item;
+        return cleanItem;
+      });
+    }
+    const { brandAlignment, ...cleanedConfig } = config;
+    return cleanedConfig;
+  };
 
   // Load project data on mount
   useEffect(() => {
@@ -44,11 +73,27 @@ const Editor = () => {
         if (project.draftConfig) {
           try {
             const config = JSON.parse(project.draftConfig);
-            // Ensure navItems exists
-            if (!config.navItems) {
-              config.navItems = [];
+            
+            // Load navbar config
+            if (config.navbar) {
+              if (!config.navbar.navItems) config.navbar.navItems = [];
+              setNavbarConfig(cleanNavbarConfig(config.navbar));
+            } else if (config.navItems) {
+              // Backward compatibility: old format had navbar at root
+              if (!config.navItems) config.navItems = [];
+              setNavbarConfig(cleanNavbarConfig(config));
             }
-            setNavbarConfig(config);
+            
+            // Load hero config
+            if (config.hero) {
+              // Ensure buttons array exists
+              const heroConfigWithButtons = {
+                ...config.hero,
+                buttons: config.hero.buttons || []
+              };
+              setHeroConfig(heroConfigWithButtons);
+            }
+            
             setDraftConfig(config);
           } catch (e) {
             console.error('Failed to parse draft config:', e);
@@ -65,6 +110,54 @@ const Editor = () => {
     loadProject();
   }, [projectId]);
 
+  // Notify SideNav when active section changes
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('editorSectionUpdate', {
+      detail: { sectionId: activeSection }
+    }));
+  }, [activeSection]);
+
+  // Scroll intersection observer for active section tracking
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            const sectionId = entry.target.id;
+            setActiveSection(sectionId);
+          }
+        });
+      },
+      { threshold: 0.5, rootMargin: '-100px 0px -50% 0px' }
+    );
+
+    const sections = ['navbar', 'hero'];
+    sections.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Listen for manual section changes from SideNav
+  useEffect(() => {
+    const handleSectionChange = (e: any) => {
+      setActiveSection(e.detail.sectionId);
+    };
+
+    window.addEventListener('editorSectionChange', handleSectionChange);
+    return () => window.removeEventListener('editorSectionChange', handleSectionChange);
+  }, []);
+
+  // Update draftConfig when any section config changes
+  useEffect(() => {
+    setDraftConfig({
+      navbar: navbarConfig,
+      hero: heroConfig
+    });
+  }, [navbarConfig, heroConfig]);
+
   // Auto-save draft when config changes
   useEffect(() => {
     if (!projectId || !draftConfig) return;
@@ -75,19 +168,15 @@ const Editor = () => {
     }, 2000); // Auto-save after 2 seconds of inactivity
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftConfig, projectId]);
-
-  // Update draftConfig when navbarConfig changes
-  useEffect(() => {
-    setDraftConfig(navbarConfig);
-  }, [navbarConfig]);
 
   const handleSaveDraft = async () => {
     if (!projectId || isSaving) return;
 
     try {
       setIsSaving(true);
-      await saveDraft(Number(projectId), navbarConfig);
+      await saveDraft(Number(projectId), draftConfig);
       console.log('Draft saved successfully');
     } catch (error) {
       console.error('Failed to save draft:', error);
@@ -101,10 +190,18 @@ const Editor = () => {
 
     try {
       setIsPublishing(true);
-      await publishSite(Number(projectId), navbarConfig);
+      const result = await publishSite(Number(projectId), draftConfig);
       setIsPublished(true);
       setHasUnpublishedChanges(false);
-      alert('Site published successfully!');
+      
+      // Show success message with live URL
+      const message = `Site published successfully!\n\nYour site is now live at:\n${result.liveUrl}`;
+      alert(message);
+      
+      // Optionally open the site in a new tab
+      if (window.confirm('Would you like to visit your live site?')) {
+        window.open(result.liveUrl, '_blank');
+      }
     } catch (error) {
       console.error('Failed to publish site:', error);
       alert('Failed to publish site. Please try again.');
@@ -113,16 +210,25 @@ const Editor = () => {
     }
   };
 
+  // Render the appropriate editor based on active section
+  const renderEditor = () => {
+    switch (activeSection) {
+      case 'navbar':
+        return <NavbarEditor config={navbarConfig} onChange={setNavbarConfig} />;
+      case 'hero':
+        return <HeroEditor config={heroConfig} onChange={setHeroConfig} />;
+      default:
+        return <NavbarEditor config={navbarConfig} onChange={setNavbarConfig} />;
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       <SideNav />
       
-      {/* Middle: Properties Panel (NavbarEditor) */}
+      {/* Middle: Properties Panel - Dynamic Editor */}
       <div className="w-96 border-r border-gray-200 bg-white overflow-y-auto">
-        <NavbarEditor 
-          config={navbarConfig}
-          onChange={setNavbarConfig}
-        />
+        {renderEditor()}
       </div>
 
       {/* Right: Preview - takes full remaining space */}
@@ -153,31 +259,22 @@ const Editor = () => {
           </div>
         </div>
         
-        {/* Preview Area - scrollable */}
-        <div className="flex-1 overflow-y-auto bg-[hsl(var(--bg-secondary))]">
-          <div className="p-4">
-            <div className="rounded-lg shadow-sm bg-white mb-4">
-              {/* Preview container with overflow for sticky behavior */}
-              <div className="rounded-lg overflow-auto border border-gray-200" style={{ maxHeight: '600px' }}>
-                <Navbar config={navbarConfig} />
-                
-                {/* Placeholder content to show navbar behavior */}
-                <div className="p-8 space-y-4">
-                  <h2 className="text-2xl font-bold">Preview Content</h2>
-                  <p className="text-gray-600">Your page content will appear here.</p>
-                  <p className="text-gray-600">
-                    {navbarConfig.position === 'fixed' 
-                      ? 'Scroll down to see the navbar stick to the top ↓' 
-                      : 'Navbar will scroll with the page'}
-                  </p>
-                  
-                  {/* Add more content to enable scrolling */}
-                  {[...Array(20)].map((_, i) => (
-                    <p key={i} className="text-gray-500">Sample content line {i + 1}</p>
-                  ))}
-                </div>
-              </div>
-            </div>
+        {/* Preview Area - Full page scrollable with live preview */}
+        <div ref={previewRef} className="flex-1 overflow-y-auto bg-white">
+          {/* Navbar Section */}
+          <div id="navbar">
+            <Navbar config={navbarConfig} />
+          </div>
+
+          {/* Hero Section */}
+          <div id="hero">
+            <Hero config={heroConfig} />
+          </div>
+
+          {/* Placeholder for future sections */}
+          <div className="py-32 text-center text-gray-400 bg-gray-50">
+            <p className="text-lg">More sections coming soon...</p>
+            <p className="text-sm mt-2">About • Services • Features • Contact • Footer</p>
           </div>
         </div>
       </div>
